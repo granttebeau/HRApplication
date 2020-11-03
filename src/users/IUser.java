@@ -13,6 +13,8 @@ public interface IUser {
 
     public String getManager(IUser admin);
 
+    public void changeManager(IUser admin, String manager);
+
     public boolean isAdmin();
 
     public boolean isHR();

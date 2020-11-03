@@ -4,6 +4,7 @@ import users.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class HRSystem implements IHRSystem {
 
@@ -184,37 +185,102 @@ public class HRSystem implements IHRSystem {
     }
 
     public static void main(String[] args) {
-        IUser admin = new Admin("admin", "qwerty", 20000, 35, 1000);
+        IUser admin = new Admin("admin", "admin", 20000, 35, 1000);
         IHRSystem hr = new HRSystem(admin);
-        hr.login("admin", "qwerty");
-        hr.addEmployee(new Manager("top-huncho", "grant",
-                100000, 20, 10000, ""));
-        hr.addEmployee(new Manager("second-place", "whatsup",
-                80000, 17, 800, "top-huncho"));
-        hr.addEmployee(new Employee("senior-engineer", "programmer",
-              39520, 21, 1050, "second-place"));
-        hr.addEmployee(new HREmployee("human-resources", "toby",
-                97000, 10, 1001, "top-huncho"));
-        hr.logout();
+        Scanner scan = new Scanner(System.in);
 
-//        hr.login("senior-engineer", "programmer");
-        hr.login("human-resources", "toby");
-        System.out.println(hr.viewPastSalaries("top-huncho"));
+        System.out.println("Welcome to Dunder Mifflin's HR System! Please login");
+        System.out.println("User ID:");
+        String username = scan.next();
+        System.out.println("Password:");
+        String password = scan.next();
+        hr.login(username, password);
+        System.out.println("Welcome admin! enter your command here:");
+        System.out.println("Possible commands:");
+        System.out.println("- viewSalary [user id]");
+        System.out.println("- viewPastSalaries [user id]");
+        System.out.println("- viewVacationBalance [user id]");
+        System.out.println("- viewAnnualBonus [user id]");
+        System.out.println("- addEmployee [type] [user id] [temp-password] [salary] [vacation balance] [annual bonus] [manager id]");
+        System.out.println("- exit");
+        while (scan.hasNext()) {
+            String command = scan.next();
+            if (command.equals("viewSalary")) {
+                String next = scan.next();
+                try {
+                    System.out.println(hr.viewSalary(next));
+                } catch (IllegalArgumentException ie) {
+                    System.out.println("Invalid command. " + ie.getMessage());
+                }
+            }
+            else if (command.equals("viewPastSalaries")) {
+                String next = scan.next();
+                try {
+                    System.out.println(hr.viewPastSalaries(next));
+                } catch (IllegalArgumentException ie) {
+                    System.out.println("Invalid command. " + ie.getMessage());
+                }
+            }
+            else if (command.equals("viewVacationBalance")) {
+                String next = scan.next();
+                try {
+                    System.out.println(hr.viewVacationBalance(next));
+                } catch (IllegalArgumentException ie) {
+                    System.out.println("Invalid command. " + ie.getMessage());
+                }
+            }
+            else if (command.equals("viewAnnualBalance")) {
+                String next = scan.next();
+                try {
+                    System.out.println(hr.viewVacationBalance(next));
+                } catch (IllegalArgumentException ie) {
+                    System.out.println("Invalid command. " + ie.getMessage());
+                }
+            }
+            else if (command.equals("addEmployee")) {
+                String type = scan.next();
+                String id = scan.next();
+                String pw = scan.next();
+                int salary = Integer.parseInt(scan.next());
+                int vb = Integer.parseInt(scan.next());
+                int ab = Integer.parseInt(scan.next());
+                String manager = scan.next();
+                try {
+                    IUser user;
+                    if (type.equals("manager")) {
+                        if (manager.equals("none")) {
+                            user = new Manager(id, pw, salary, vb, ab, "");
+                        }
+                        else {
+                            user = new Manager(id, pw, salary, vb, ab, manager);
+                        }
+                    }
+                    else if (type.equals("employee")) {
+                        user = new Employee(id, pw, salary, vb, ab, manager);
+                    }
+                    else if (type.equals("hr-employee")) {
+                        user = new HREmployee(id, pw, salary, vb, ab, manager);
+                    }
+                    else {
+                        user = new Admin(id, pw, salary, vb, ab);
+                    }
+                    hr.addEmployee(user);
+                    System.out.println("Employee added!");
+                } catch (IllegalArgumentException ie) {
+                    System.out.println("Invalid command. " + ie.getMessage());
+                }
+            }
+            else if (command.equals("exit")) {
+                break;
+            }
 
-
-        System.out.println(hr.viewSalary("top-huncho"));
-//        hr.changeSalary("senior-engineer", 100000);
-//        System.out.println(hr.viewSalary("senior-engineer"));
-//
-        System.out.println(hr.viewPastSalaries("top-huncho"));
-//
-        System.out.println(hr.viewVacationBalance("top-huncho"));
-//        hr.changeVacationBalance("senior-engineer", -1);
-//        System.out.println(hr.viewVacationBalance("senior-engineer"));
-//
-        System.out.println(hr.viewAnnualBalance("top-huncho"));
-//        hr.changeAnnualBalance("senior-engineer", -100);
-//        System.out.println(hr.viewAnnualBalance("senior-engineer"));
+            System.out.println("Possible commands:");
+            System.out.println("- viewSalary [user id]");
+            System.out.println("- viewPastSalaries [user id]");
+            System.out.println("- viewVacationBalance [user id]");
+            System.out.println("- viewAnnualBonus [user id]");
+            System.out.println("- addEmployee [type] [user id] [temp-password] [salary] [vacation balance] [annual bonus] [manager id]");
+            System.out.println("- exit");
+        }
     }
-
 }

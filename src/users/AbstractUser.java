@@ -74,6 +74,15 @@ public abstract class AbstractUser implements IUser{
     }
 
     @Override
+    public void changeManager(IUser admin, String manager) {
+        if (admin.isAdmin()) {
+            this.manager = manager;
+            return;
+        }
+        throw new IllegalArgumentException("This user can't update another user's information");
+    }
+
+    @Override
     public String getManager(IUser admin) {
         if (acceptableView(admin)) {
             return manager;
