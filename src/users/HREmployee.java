@@ -4,26 +4,11 @@ import java.util.List;
 
 public class HREmployee extends AbstractUser {
 
-    IUser manager;
+    String manager;
 
-    public HREmployee(String id, String password, int salary, int vacationBalance, int annualBonus, IUser manager) {
+    public HREmployee(String id, String password, int salary, int vacationBalance, int annualBonus, String manager) {
         super(id, password, salary, vacationBalance, annualBonus);
         this.manager = manager;
-    }
-
-    @Override
-    public boolean isHR() {
-        return true;
-    }
-
-    @Override
-    public void addManager(IUser manager) {
-        this.manager = manager;
-    }
-
-    @Override
-    public void addEmployee(IUser employee) {
-        throw new IllegalArgumentException("Can't add an employee to an employee");
     }
 
     @Override
@@ -32,8 +17,31 @@ public class HREmployee extends AbstractUser {
     }
 
     @Override
+    public boolean isManager() {
+        return false;
+    }
+
+    @Override
+    public boolean isHR() {
+        return true;
+    }
+
+    @Override
+    public void addManager(IUser admin, String manager) {
+        if (admin.isAdmin()) {
+            this.manager = manager;
+        }
+        throw new IllegalArgumentException("This user can't add a manager");
+    }
+
+    @Override
+    public void addEmployee(IUser admin, IUser employee) {
+        throw new IllegalArgumentException("Can't add an employee to an employee");
+    }
+
+    @Override
     public int viewSalary(IUser user) {
-        if (user.equals(this) || user.equals(manager) || user.isAdmin()) {
+        if (user.equals(this) || user.getUserID().equals(manager) || user.isAdmin()) {
             return salary;
         }
         else if (!user.isHR()) {
@@ -44,7 +52,7 @@ public class HREmployee extends AbstractUser {
 
     @Override
     public void editSalary(IUser user, int salary) {
-        if (user.equals(manager) || user.isAdmin()) {
+        if (user.getUserID().equals(manager) || user.isAdmin()) {
             pastSalaries.add(this.salary);
             this.salary = salary;
         }
@@ -53,7 +61,7 @@ public class HREmployee extends AbstractUser {
 
     @Override
     public List<Integer> viewPastSalaries(IUser user) {
-        if (user.equals(manager) || user.isAdmin()) {
+        if (user.getUserID().equals(manager) || user.isAdmin()) {
             return pastSalaries;
         }
         else if (!user.isHR()) {
@@ -64,7 +72,7 @@ public class HREmployee extends AbstractUser {
 
     @Override
     public int viewVacationBalance(IUser user) {
-        if (user.equals(manager) || user.isAdmin()) {
+        if (user.getUserID().equals(manager) || user.isAdmin()) {
             return vacationBalance;
         }
         else if (!user.isHR()) {
@@ -75,7 +83,7 @@ public class HREmployee extends AbstractUser {
 
     @Override
     public void changeVacationBalance(IUser user, int days) {
-        if (user.equals(manager) || user.isAdmin()) {
+        if (user.getUserID().equals(manager) || user.isAdmin()) {
             this.vacationBalance += days;
         }
         throw new IllegalArgumentException("can't change this user's vacation balance");
@@ -83,7 +91,7 @@ public class HREmployee extends AbstractUser {
 
     @Override
     public int viewAnnualBonus(IUser user) {
-        if (user.equals(manager) || user.isAdmin()) {
+        if (user.getUserID().equals(manager) || user.isAdmin()) {
             return annualBonus;
         }
         else if (!user.isHR()) {
@@ -93,8 +101,16 @@ public class HREmployee extends AbstractUser {
     }
 
     @Override
+    public String getManager(IUser admin) {
+        if (admin.isAdmin() || admin.getUserID().equals(this.manager)) {
+            return manager;
+        }
+        throw new IllegalArgumentException("User can't access information");
+    }
+
+    @Override
     public void changeAnnualBonus(IUser user, int value) {
-        if (user.equals(manager) || user.isAdmin()) {
+        if (user.getUserID().equals(manager) || user.isAdmin()) {
             this.annualBonus +=  value;
         }
         throw new IllegalArgumentException("can't change this user's annual bonus");

@@ -1,5 +1,6 @@
 package users;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractUser implements IUser{
@@ -10,12 +11,14 @@ public abstract class AbstractUser implements IUser{
     protected int vacationBalance;
     protected int annualBonus;
 
-    public AbstractUser(String id, String password, int salary, int vacationBalance, int annualBonus) {
+    public AbstractUser(String id, String password, int salary, int vacationBalance,
+                        int annualBonus) {
         this.userID = id;
         this.password = password;
         this.salary = salary;
         this.vacationBalance = vacationBalance;
         this.annualBonus = annualBonus;
+        this.pastSalaries = new ArrayList<Integer>();
     }
 
     @Override

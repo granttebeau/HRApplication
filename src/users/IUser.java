@@ -7,13 +7,20 @@ public interface IUser {
 
     public String getUserID();
 
-    public void addManager(IUser manager);
+    public void addManager(IUser admin, String manager);
 
-    public void addEmployee(IUser employee);
+    public void addEmployee(IUser admin, IUser employee);
+
+    public String getManager(IUser admin);
+
+//    public void getEmployee(IUser admin, IUser employee);
 
     public boolean isAdmin();
 
     public boolean isHR();
+
+    public boolean isManager();
+
 
     public int viewSalary(IUser user);
 
