@@ -13,14 +13,11 @@ public interface IUser {
 
     public String getManager(IUser admin);
 
-//    public void getEmployee(IUser admin, IUser employee);
-
     public boolean isAdmin();
 
     public boolean isHR();
 
     public boolean isManager();
-
 
     public int viewSalary(IUser user);
 

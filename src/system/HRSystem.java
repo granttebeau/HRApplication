@@ -1,9 +1,6 @@
 package system;
 
-import users.Admin;
-import users.Employee;
-import users.IUser;
-import users.Manager;
+import users.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -196,26 +193,28 @@ public class HRSystem implements IHRSystem {
                 80000, 17, 800, "top-huncho"));
         hr.addEmployee(new Employee("senior-engineer", "programmer",
               39520, 21, 1050, "second-place"));
+        hr.addEmployee(new HREmployee("human-resources", "toby",
+                97000, 10, 1001, "top-huncho"));
         hr.logout();
 
-        hr.login("senior-engineer", "programmer");
-        System.out.println(hr.viewPastSalaries("senior-engineer"));
+//        hr.login("senior-engineer", "programmer");
+        hr.login("human-resources", "toby");
+        System.out.println(hr.viewPastSalaries("top-huncho"));
 
-//        System.out.println(hr.viewPastSalaries("second-place"));
 
-        System.out.println(hr.viewSalary("senior-engineer"));
+        System.out.println(hr.viewSalary("top-huncho"));
 //        hr.changeSalary("senior-engineer", 100000);
-//        System.out.println(hr.viewSalary("second-place"));
+//        System.out.println(hr.viewSalary("senior-engineer"));
 //
-//        System.out.println(hr.viewPastSalaries("second-place"));
+        System.out.println(hr.viewPastSalaries("top-huncho"));
 //
-        System.out.println(hr.viewVacationBalance("senior-engineer"));
-//        hr.changeVacationBalance("second-place", -1);
-//        System.out.println(hr.viewVacationBalance("second-place"));
+        System.out.println(hr.viewVacationBalance("top-huncho"));
+//        hr.changeVacationBalance("senior-engineer", -1);
+//        System.out.println(hr.viewVacationBalance("senior-engineer"));
 //
-        System.out.println(hr.viewAnnualBalance("senior-engineer"));
-//        hr.changeAnnualBalance("second-place", -100);
-//        System.out.println(hr.viewAnnualBalance("second-place"));
+        System.out.println(hr.viewAnnualBalance("top-huncho"));
+//        hr.changeAnnualBalance("senior-engineer", -100);
+//        System.out.println(hr.viewAnnualBalance("senior-engineer"));
     }
 
 }

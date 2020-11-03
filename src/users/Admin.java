@@ -10,11 +10,6 @@ public class Admin extends AbstractUser {
     }
 
     @Override
-    public boolean isManager() {
-        return false;
-    }
-
-    @Override
     public void addManager(IUser admin, String manager) {
 
     }
@@ -34,10 +29,6 @@ public class Admin extends AbstractUser {
         return true;
     }
 
-    @Override
-    public boolean isHR() {
-        return false;
-    }
 
     @Override
     public int viewSalary(IUser user) {
