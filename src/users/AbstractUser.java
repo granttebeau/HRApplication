@@ -2,8 +2,12 @@ package users;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public abstract class AbstractUser implements IUser{
+/**
+ * Abstract class for a user. Has common functionalities between a Manager, Employee, and HREmployee.
+ */
+public abstract class AbstractUser implements IUser {
     protected final String userID;
     protected String password;
     protected int salary;
@@ -11,15 +15,17 @@ public abstract class AbstractUser implements IUser{
     protected int vacationBalance;
     protected int annualBonus;
     protected String manager;
+    protected final boolean isAdmin;
 
     public AbstractUser(String id, String password, int salary, int vacationBalance,
-                        int annualBonus) {
+                        int annualBonus, boolean isAdmin) {
         this.userID = id;
         this.password = password;
         this.salary = salary;
         this.vacationBalance = vacationBalance;
         this.annualBonus = annualBonus;
         this.pastSalaries = new ArrayList<Integer>();
+        this.isAdmin = isAdmin;
     }
 
     @Override
@@ -34,6 +40,16 @@ public abstract class AbstractUser implements IUser{
             return;
         }
         throw new IllegalArgumentException("This user can't add a manager");
+    }
+
+    @Override
+    public void removeEmployee(IUser admin, IUser userID) {
+        throw new IllegalArgumentException("Can't remove an employee from an employee");
+    }
+
+    @Override
+    public List<String> viewEmployees(IUser userID) {
+        throw new IllegalArgumentException("Can't remove an employee from an employee");
     }
 
     @Override
@@ -83,7 +99,7 @@ public abstract class AbstractUser implements IUser{
     }
 
     @Override
-    public String getManager(IUser admin) {
+    public String viewManager(IUser admin) {
         if (acceptableView(admin)) {
             return manager;
         }
@@ -134,7 +150,7 @@ public abstract class AbstractUser implements IUser{
 
     @Override
     public boolean isAdmin() {
-        return false;
+        return isAdmin;
     }
 
     @Override
@@ -147,11 +163,48 @@ public abstract class AbstractUser implements IUser{
         return false;
     }
 
+    /**
+     * Checks whether a user has the ability to view this user's info.
+     * @param user the user in question
+     * @return whether the given user has this ability
+     */
     protected boolean acceptableView(IUser user) {
         return user.equals(this) || user.getUserID().equals(manager) || user.isAdmin() || user.isHR();
     }
 
+    /**
+     * Checks whether a user has the ability to change this user's info.
+     * @param user the user in question
+     * @return whether the given user has this ability
+     */
     protected boolean acceptableEdit(IUser user) {
         return user.getUserID().equals(manager) || user.isAdmin();
+    }
+
+    @Override
+    public String toString() {
+        return userID;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+
+        if (!(o instanceof AbstractUser)) {
+            return false;
+        }
+
+        AbstractUser other = (AbstractUser) o;
+
+        return this.userID.equals(other.userID) && this.password.equals(other.password)
+                && this.salary == other.salary && this.pastSalaries.equals(other.pastSalaries)
+                && this.annualBonus == other.annualBonus && this.vacationBalance == other.vacationBalance;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(salary, annualBonus, vacationBalance);
     }
 }

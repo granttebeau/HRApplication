@@ -4,13 +4,13 @@ import users.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
+/**
+ * Implementation of a Human Resources System.
+ */
 public class HRSystem implements IHRSystem {
-
     List<IUser> managers;
     List<IUser> employees;
-    List<IUser> admin;
     IUser currentUser;
     boolean loggedIn;
 
@@ -19,10 +19,14 @@ public class HRSystem implements IHRSystem {
             throw new IllegalArgumentException("Have to start a system with an admin");
         }
         this.loggedIn = false;
-        this.admin = new ArrayList<IUser>();
-        this.admin.add(admin);
         this.managers = new ArrayList<IUser>();
         this.employees = new ArrayList<IUser>();
+        if (admin.isManager()) {
+            this.managers.add(admin);
+        }
+        else {
+            this.employees.add(admin);
+        }
         this.currentUser = null;
     }
 
@@ -32,7 +36,6 @@ public class HRSystem implements IHRSystem {
             throw new IllegalStateException("Already logged in");
         }
         List<IUser> users = new ArrayList<IUser>();
-        users.addAll(admin);
         users.addAll(managers);
         users.addAll(employees);
         for (IUser user : users) {
@@ -61,19 +64,19 @@ public class HRSystem implements IHRSystem {
         if (!loggedIn) {
             throw new IllegalStateException("Not logged in");
         }
+        else if (existingID(employee)) {
+            throw new IllegalArgumentException("User ID already exists");
+        }
         if (currentUser.isAdmin()) {
             if (employee.isManager()) {
                 managers.add(employee);
-                if (employee.getManager(currentUser) != null) {
-                    getEmployeeByID(employee.getManager(currentUser)).addEmployee(currentUser, employee);
+                if (employee.viewManager(currentUser) != null) {
+                    getEmployeeByID(employee.viewManager(currentUser)).addEmployee(currentUser, employee);
                 }
-            }
-            else if (employee.isAdmin()) {
-                admin.add(employee);
             }
             else {
                 employees.add(employee);
-                IUser manager = getEmployeeByID(employee.getManager(currentUser));
+                IUser manager = getEmployeeByID(employee.viewManager(currentUser));
                 employee.addManager(currentUser, manager.getUserID());
                 manager.addEmployee(currentUser, employee);
             }
@@ -86,15 +89,14 @@ public class HRSystem implements IHRSystem {
             throw new IllegalStateException("Not logged in");
         }
         List<IUser> users = new ArrayList<IUser>();
-        users.addAll(admin);
         users.addAll(managers);
         users.addAll(employees);
         for (IUser user : users) {
             if (employee.getUserID().equals(user.getUserID())) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     @Override
@@ -103,7 +105,6 @@ public class HRSystem implements IHRSystem {
             throw new IllegalStateException("Not logged in");
         }
         List<IUser> users = new ArrayList<IUser>();
-        users.addAll(admin);
         users.addAll(managers);
         users.addAll(employees);
         for (IUser user : users) {
@@ -120,7 +121,7 @@ public class HRSystem implements IHRSystem {
         try {
             return user.viewSalary(currentUser);
         } catch (IllegalArgumentException ie) {
-            throw new IllegalArgumentException(ie.getMessage());
+            throw new IllegalArgumentException("Invalid access. " + ie.getMessage());
         }
     }
 
@@ -130,7 +131,7 @@ public class HRSystem implements IHRSystem {
         try {
             user.editSalary(currentUser, amount);
         } catch (IllegalArgumentException ie) {
-            throw new IllegalArgumentException(ie.getMessage());
+            throw new IllegalArgumentException("Invalid access. " + ie.getMessage());
         }
     }
 
@@ -140,7 +141,7 @@ public class HRSystem implements IHRSystem {
         try {
             return user.viewPastSalaries(currentUser);
         } catch (IllegalArgumentException ie) {
-            throw new IllegalArgumentException(ie.getMessage());
+            throw new IllegalArgumentException("Invalid access. " + ie.getMessage());
         }
     }
 
@@ -150,7 +151,7 @@ public class HRSystem implements IHRSystem {
         try {
             return user.viewVacationBalance(currentUser);
         } catch (IllegalArgumentException ie) {
-            throw new IllegalArgumentException(ie.getMessage());
+            throw new IllegalArgumentException("Invalid access. " + ie.getMessage());
         }
     }
 
@@ -160,127 +161,248 @@ public class HRSystem implements IHRSystem {
         try {
             user.changeVacationBalance(currentUser, increment);
         } catch (IllegalArgumentException ie) {
-            throw new IllegalArgumentException(ie.getMessage());
+            throw new IllegalArgumentException("Invalid access. " + ie.getMessage());
         }
     }
 
     @Override
-    public int viewAnnualBalance(String userID) {
+    public int viewAnnualBonus(String userID) {
         IUser user = getEmployeeByID(userID);
         try {
             return user.viewAnnualBonus(currentUser);
         } catch (IllegalArgumentException ie) {
-            throw new IllegalArgumentException(ie.getMessage());
+            throw new IllegalArgumentException("Invalid access. " + ie.getMessage());
         }
     }
 
     @Override
-    public void changeAnnualBalance(String userID, int increment) {
+    public void changeAnnualBonus(String userID, int increment) {
         IUser user = getEmployeeByID(userID);
         try {
             user.changeAnnualBonus(currentUser, increment);
         } catch (IllegalArgumentException ie) {
-            throw new IllegalArgumentException(ie.getMessage());
+            throw new IllegalArgumentException("Invalid access. " + ie.getMessage());
+        }
+    }
+
+    @Override
+    public void changeManager(String employee, String manager) {
+        IUser employ = getEmployeeByID(employee);
+        IUser oldManager = getEmployeeByID(employ.viewManager(currentUser));
+        IUser mangr = getEmployeeByID(manager);
+        if (mangr.isManager()) {
+            try {
+                employ.changeManager(currentUser, manager);
+                mangr.addEmployee(currentUser, employ);
+                oldManager.removeEmployee(currentUser, employ);
+            } catch (IllegalArgumentException ie) {
+                throw new IllegalArgumentException("Invalid access. " + ie.getMessage());
+            }
+        }
+        else {
+            throw new IllegalArgumentException("Has to be a Manager");
+        }
+    }
+
+    @Override
+    public List<String> viewEmployees(String userID) {
+        IUser user = getEmployeeByID(userID);
+        try {
+            return user.viewEmployees(currentUser);
+        } catch (IllegalArgumentException ie) {
+            throw new IllegalArgumentException("Invalid access. " + ie.getMessage());
+        }
+    }
+
+    @Override
+    public void removeEmployee(String employee) {
+        IUser employ = getEmployeeByID(employee);
+        IUser oldManager = getEmployeeByID(employ.viewManager(currentUser));
+        if (employ.isManager()) {
+            List<String> ems = employ.viewEmployees(currentUser);
+            String man = employ.viewManager(currentUser);
+            IUser manager = getEmployeeByID(man);
+            for (String s : ems) {
+                IUser user = getEmployeeByID(s);
+                user.addManager(currentUser, man);
+                manager.addEmployee(currentUser, user);
+            }
+        }
+        oldManager.removeEmployee(currentUser, employ);
+        managers.remove(employ);
+    }
+
+    @Override
+    public String viewManager(String userID) {
+        IUser user = getEmployeeByID(userID);
+        try {
+            return user.viewManager(currentUser);
+        } catch (IllegalArgumentException ie) {
+            throw new IllegalArgumentException("Invalid access. " + ie.getMessage());
         }
     }
 
     public static void main(String[] args) {
-        IUser admin = new Admin("admin", "admin", 20000, 35, 1000);
+        // Initialize the HRSystem with an admin user.
+        IUser admin = new Manager("jan", "vp-northeast-sales",
+                1000000, 55, 50000, "", true);
         IHRSystem hr = new HRSystem(admin);
-        Scanner scan = new Scanner(System.in);
 
-        System.out.println("Welcome to Dunder Mifflin's HR System! Please login");
-        System.out.println("User ID:");
-        String username = scan.next();
-        System.out.println("Password:");
-        String password = scan.next();
-        hr.login(username, password);
-        System.out.println("Welcome admin! enter your command here:");
-        System.out.println("Possible commands:");
-        System.out.println("- viewSalary [user id]");
-        System.out.println("- viewPastSalaries [user id]");
-        System.out.println("- viewVacationBalance [user id]");
-        System.out.println("- viewAnnualBonus [user id]");
-        System.out.println("- addEmployee [type] [user id] [temp-password] [salary] [vacation balance] [annual bonus] [manager id]");
-        System.out.println("- exit");
-        while (scan.hasNext()) {
-            String command = scan.next();
-            if (command.equals("viewSalary")) {
-                String next = scan.next();
-                try {
-                    System.out.println(hr.viewSalary(next));
-                } catch (IllegalArgumentException ie) {
-                    System.out.println("Invalid command. " + ie.getMessage());
-                }
-            }
-            else if (command.equals("viewPastSalaries")) {
-                String next = scan.next();
-                try {
-                    System.out.println(hr.viewPastSalaries(next));
-                } catch (IllegalArgumentException ie) {
-                    System.out.println("Invalid command. " + ie.getMessage());
-                }
-            }
-            else if (command.equals("viewVacationBalance")) {
-                String next = scan.next();
-                try {
-                    System.out.println(hr.viewVacationBalance(next));
-                } catch (IllegalArgumentException ie) {
-                    System.out.println("Invalid command. " + ie.getMessage());
-                }
-            }
-            else if (command.equals("viewAnnualBalance")) {
-                String next = scan.next();
-                try {
-                    System.out.println(hr.viewVacationBalance(next));
-                } catch (IllegalArgumentException ie) {
-                    System.out.println("Invalid command. " + ie.getMessage());
-                }
-            }
-            else if (command.equals("addEmployee")) {
-                String type = scan.next();
-                String id = scan.next();
-                String pw = scan.next();
-                int salary = Integer.parseInt(scan.next());
-                int vb = Integer.parseInt(scan.next());
-                int ab = Integer.parseInt(scan.next());
-                String manager = scan.next();
-                try {
-                    IUser user;
-                    if (type.equals("manager")) {
-                        if (manager.equals("none")) {
-                            user = new Manager(id, pw, salary, vb, ab, "");
-                        }
-                        else {
-                            user = new Manager(id, pw, salary, vb, ab, manager);
-                        }
-                    }
-                    else if (type.equals("employee")) {
-                        user = new Employee(id, pw, salary, vb, ab, manager);
-                    }
-                    else if (type.equals("hr-employee")) {
-                        user = new HREmployee(id, pw, salary, vb, ab, manager);
-                    }
-                    else {
-                        user = new Admin(id, pw, salary, vb, ab);
-                    }
-                    hr.addEmployee(user);
-                    System.out.println("Employee added!");
-                } catch (IllegalArgumentException ie) {
-                    System.out.println("Invalid command. " + ie.getMessage());
-                }
-            }
-            else if (command.equals("exit")) {
-                break;
-            }
+        // Log in as the admin user and add various employees
+        hr.login("jan", "vp-northeast-sales");
+        hr.addEmployee(new Manager("michael", "michael-scarn",
+                39000, 35, 10000, "jan", false));
+        hr.addEmployee(new Employee("dwight", "assistant-to-the-rm",
+                80000, 21, 8000, "michael", false));
+        hr.addEmployee(new Employee("jim", "big-tuna",
+                40000, 23, 7000, "michael", false));
+        hr.addEmployee(new HREmployee("toby", "human-resources",
+                55000, 40, 5432, "michael", false));
+        hr.addEmployee(new HREmployee("holly", "human-resources",
+                56000, 23, 4353, "michael", false));
 
-            System.out.println("Possible commands:");
-            System.out.println("- viewSalary [user id]");
-            System.out.println("- viewPastSalaries [user id]");
-            System.out.println("- viewVacationBalance [user id]");
-            System.out.println("- viewAnnualBonus [user id]");
-            System.out.println("- addEmployee [type] [user id] [temp-password] [salary] [vacation balance] [annual bonus] [manager id]");
-            System.out.println("- exit");
+        // Demonstrates the view and change functionalities of the admin user. Should print out:
+        //  1000000
+        //  []
+        //  21
+        //  5432
+        //  michael
+        //  --------------
+        //  2000000
+        //  [39000]
+        //  20
+        //  5832
+        //  jan
+        System.out.println(hr.viewSalary("jan"));
+        System.out.println(hr.viewPastSalaries("michael"));
+        System.out.println(hr.viewVacationBalance("dwight"));
+        System.out.println(hr.viewAnnualBonus("toby"));
+        System.out.println(hr.viewManager("toby"));
+        hr.changeSalary("jan", 2000000);
+        hr.changeSalary("michael", 40000);
+        hr.changeVacationBalance("dwight", -1);
+        hr.changeAnnualBonus("toby", 400);
+        hr.changeManager("toby", "jan");
+        System.out.println("--------------");
+        System.out.println(hr.viewSalary("jan"));
+        System.out.println(hr.viewPastSalaries("michael"));
+        System.out.println(hr.viewVacationBalance("dwight"));
+        System.out.println(hr.viewAnnualBonus("toby"));
+        System.out.println(hr.viewManager("toby"));
+        System.out.println("--------------");
+
+        // Logout of the admin and log into as a regular employee.
+        hr.logout();
+        hr.login("dwight", "assistant-to-the-rm");
+        System.out.println("--------------");
+
+        // Demonstrate the view/change functionality of a regular employee. Should display one 8000, and then
+        // multiple instances of error messages: "Invalid access. Can't access this user's information."
+        System.out.println(hr.viewAnnualBonus("dwight"));
+        try {
+            System.out.println(hr.viewAnnualBonus("jim"));
+        } catch (IllegalArgumentException ie) {
+            System.out.println(ie.getMessage());
         }
+        try {
+            System.out.println(hr.viewAnnualBonus("toby"));
+        } catch (IllegalArgumentException ie) {
+            System.out.println(ie.getMessage());
+        }
+        try {
+            System.out.println(hr.viewAnnualBonus("michael"));
+        } catch (IllegalArgumentException ie) {
+            System.out.println(ie.getMessage());
+        }
+        try {
+            hr.changeAnnualBonus("dwight", 200);
+        } catch (IllegalArgumentException ie) {
+            System.out.println(ie.getMessage());
+        }
+        try {
+            hr.changeAnnualBonus("michael", 200);
+        } catch (IllegalArgumentException ie) {
+            System.out.println(ie.getMessage());
+        }
+        try {
+            hr.changeAnnualBonus("toby", 200);
+        } catch (IllegalArgumentException ie) {
+            System.out.println(ie.getMessage());
+        }
+
+        // Log out of a regular employee's account, and log into as an HR Employee's account.
+        hr.logout();
+        hr.login("toby", "human-resources");
+        System.out.println("--------------");
+
+        // Demonstrate the view/change functionality of an HR employee. Should display:
+        // 55
+        // 35
+        // 23
+        // 40
+        // Followed by multiple instances of "Invalid access. Can't change this user's information." because
+        // an HR employee can only view the information from employees that aren't HR employees.
+        System.out.println(hr.viewVacationBalance("jan"));
+        System.out.println(hr.viewVacationBalance("michael"));
+        System.out.println(hr.viewVacationBalance("jim"));
+        System.out.println(hr.viewVacationBalance("toby"));
+        try {
+            System.out.println(hr.viewVacationBalance("holly"));
+        } catch (IllegalArgumentException ie) {
+            System.out.println(ie.getMessage());
+        }
+        try {
+            hr.changeVacationBalance("dwight", 200);
+        } catch (IllegalArgumentException ie) {
+            System.out.println(ie.getMessage());
+        }
+        try {
+            hr.changeVacationBalance("michael", 200);
+        } catch (IllegalArgumentException ie) {
+            System.out.println(ie.getMessage());
+        }
+        try {
+            hr.changeVacationBalance("toby", 200);
+        } catch (IllegalArgumentException ie) {
+            System.out.println(ie.getMessage());
+        }
+        try {
+            hr.changeVacationBalance("holly", 200);
+        } catch (IllegalArgumentException ie) {
+            System.out.println(ie.getMessage());
+        }
+
+        // Log out of an HR employee's account and log back in as an admin.
+        hr.logout();
+        hr.login("jan", "vp-northeast-sales");
+        System.out.println("--------------");
+
+        // Demonstrates the view/change employees functionality.
+        // Should print out:
+        //  [dwight, jim, holly]
+        //  [michael, toby]
+        //  --------------
+        //  [dwight, jim]
+        //  [michael, toby]
+        //  --------------
+        //  No such user
+        //  [toby, dwight, jim]
+        System.out.println(hr.viewEmployees("michael"));
+        System.out.println(hr.viewEmployees("jan"));
+
+        hr.removeEmployee("holly");
+        System.out.println("--------------");
+        System.out.println(hr.viewEmployees("michael"));
+        System.out.println(hr.viewEmployees("jan"));
+
+        hr.removeEmployee("michael");
+        System.out.println("--------------");
+        try {
+            System.out.println(hr.viewEmployees("michael"));
+        } catch (IllegalArgumentException ie) {
+            System.out.println(ie.getMessage());
+        }
+        System.out.println(hr.viewEmployees("jan"));
+
     }
 }
