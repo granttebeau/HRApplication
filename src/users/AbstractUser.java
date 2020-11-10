@@ -34,15 +34,6 @@ public abstract class AbstractUser implements IUser {
     }
 
     @Override
-    public void addManager(IUser admin, String manager) {
-        if (admin.isAdmin()) {
-            this.manager = manager;
-            return;
-        }
-        throw new IllegalArgumentException("This user can't add a manager");
-    }
-
-    @Override
     public void removeEmployee(IUser admin, IUser userID) {
         throw new IllegalArgumentException("Can't remove an employee from an employee");
     }

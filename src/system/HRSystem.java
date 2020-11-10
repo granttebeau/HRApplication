@@ -77,7 +77,7 @@ public class HRSystem implements IHRSystem {
             else {
                 employees.add(employee);
                 IUser manager = getEmployeeByID(employee.viewManager(currentUser));
-                employee.addManager(currentUser, manager.getUserID());
+                employee.changeManager(currentUser, manager.getUserID());
                 manager.addEmployee(currentUser, employee);
             }
         }
@@ -117,6 +117,9 @@ public class HRSystem implements IHRSystem {
 
     @Override
     public int viewSalary(String userID) {
+        if (!loggedIn) {
+            throw new IllegalStateException("Not logged in");
+        }
         IUser user = getEmployeeByID(userID);
         try {
             return user.viewSalary(currentUser);
@@ -127,6 +130,9 @@ public class HRSystem implements IHRSystem {
 
     @Override
     public void changeSalary(String userID, int amount) {
+        if (!loggedIn) {
+            throw new IllegalStateException("Not logged in");
+        }
         IUser user = getEmployeeByID(userID);
         try {
             user.editSalary(currentUser, amount);
@@ -137,6 +143,9 @@ public class HRSystem implements IHRSystem {
 
     @Override
     public List<Integer> viewPastSalaries(String userID) {
+        if (!loggedIn) {
+            throw new IllegalStateException("Not logged in");
+        }
         IUser user = getEmployeeByID(userID);
         try {
             return user.viewPastSalaries(currentUser);
@@ -147,6 +156,9 @@ public class HRSystem implements IHRSystem {
 
     @Override
     public int viewVacationBalance(String userID) {
+        if (!loggedIn) {
+            throw new IllegalStateException("Not logged in");
+        }
         IUser user = getEmployeeByID(userID);
         try {
             return user.viewVacationBalance(currentUser);
@@ -157,6 +169,9 @@ public class HRSystem implements IHRSystem {
 
     @Override
     public void changeVacationBalance(String userID, int increment) {
+        if (!loggedIn) {
+            throw new IllegalStateException("Not logged in");
+        }
         IUser user = getEmployeeByID(userID);
         try {
             user.changeVacationBalance(currentUser, increment);
@@ -167,6 +182,9 @@ public class HRSystem implements IHRSystem {
 
     @Override
     public int viewAnnualBonus(String userID) {
+        if (!loggedIn) {
+            throw new IllegalStateException("Not logged in");
+        }
         IUser user = getEmployeeByID(userID);
         try {
             return user.viewAnnualBonus(currentUser);
@@ -177,6 +195,9 @@ public class HRSystem implements IHRSystem {
 
     @Override
     public void changeAnnualBonus(String userID, int increment) {
+        if (!loggedIn) {
+            throw new IllegalStateException("Not logged in");
+        }
         IUser user = getEmployeeByID(userID);
         try {
             user.changeAnnualBonus(currentUser, increment);
@@ -187,6 +208,9 @@ public class HRSystem implements IHRSystem {
 
     @Override
     public void changeManager(String employee, String manager) {
+        if (!loggedIn) {
+            throw new IllegalStateException("Not logged in");
+        }
         IUser employ = getEmployeeByID(employee);
         IUser oldManager = getEmployeeByID(employ.viewManager(currentUser));
         IUser mangr = getEmployeeByID(manager);
@@ -206,6 +230,9 @@ public class HRSystem implements IHRSystem {
 
     @Override
     public List<String> viewEmployees(String userID) {
+        if (!loggedIn) {
+            throw new IllegalStateException("Not logged in");
+        }
         IUser user = getEmployeeByID(userID);
         try {
             return user.viewEmployees(currentUser);
@@ -216,6 +243,9 @@ public class HRSystem implements IHRSystem {
 
     @Override
     public void removeEmployee(String employee) {
+        if (!loggedIn) {
+            throw new IllegalStateException("Not logged in");
+        }
         IUser employ = getEmployeeByID(employee);
         IUser oldManager = getEmployeeByID(employ.viewManager(currentUser));
         if (employ.isManager()) {
@@ -224,7 +254,7 @@ public class HRSystem implements IHRSystem {
             IUser manager = getEmployeeByID(man);
             for (String s : ems) {
                 IUser user = getEmployeeByID(s);
-                user.addManager(currentUser, man);
+                user.changeManager(currentUser, man);
                 manager.addEmployee(currentUser, user);
             }
         }
@@ -234,6 +264,9 @@ public class HRSystem implements IHRSystem {
 
     @Override
     public String viewManager(String userID) {
+        if (!loggedIn) {
+            throw new IllegalStateException("Not logged in");
+        }
         IUser user = getEmployeeByID(userID);
         try {
             return user.viewManager(currentUser);
@@ -403,6 +436,5 @@ public class HRSystem implements IHRSystem {
             System.out.println(ie.getMessage());
         }
         System.out.println(hr.viewEmployees("jan"));
-
     }
 }

@@ -39,13 +39,6 @@ public interface IUser {
     public boolean isManager();
 
     /**
-     * Sets the user's manager.
-     * @param admin checking to see whether the user making the change has the right credentials
-     * @param manager the given manager
-     */
-    public void addManager(IUser admin, String manager);
-
-    /**
      * Adds an employee to the user. Throws an exception if the user is not a manager.
      * @param admin checking to see whether the user making the change has the right credentials
      * @param employee the given employee to be added
