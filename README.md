@@ -23,6 +23,6 @@ Hence the extension of the AbstractUser class. As previously mentioned,
 some users might not have a manager. If this is the case, the manager 
 field is represented as an empty string. 
 - HREmployees are able to view the information of their managers. The reasoning
-for this is becasue "have access to information about all Employees."
+for this is because "have access to information about all Employees."
 - "Administrative users" are also employees. In the constructor of each class, 
 there's an isAdmin field. Therefore, any user can be given administrative access. 

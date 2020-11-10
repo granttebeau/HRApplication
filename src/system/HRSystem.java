@@ -246,20 +246,24 @@ public class HRSystem implements IHRSystem {
         if (!loggedIn) {
             throw new IllegalStateException("Not logged in");
         }
-        IUser employ = getEmployeeByID(employee);
-        IUser oldManager = getEmployeeByID(employ.viewManager(currentUser));
-        if (employ.isManager()) {
-            List<String> ems = employ.viewEmployees(currentUser);
-            String man = employ.viewManager(currentUser);
-            IUser manager = getEmployeeByID(man);
-            for (String s : ems) {
-                IUser user = getEmployeeByID(s);
-                user.changeManager(currentUser, man);
-                manager.addEmployee(currentUser, user);
+        if (currentUser.isAdmin()) {
+            IUser employ = getEmployeeByID(employee);
+            IUser oldManager = getEmployeeByID(employ.viewManager(currentUser));
+            if (employ.isManager()) {
+                List<String> ems = employ.viewEmployees(currentUser);
+                String man = employ.viewManager(currentUser);
+                IUser manager = getEmployeeByID(man);
+                for (String s : ems) {
+                    IUser user = getEmployeeByID(s);
+                    user.changeManager(currentUser, man);
+                    manager.addEmployee(currentUser, user);
+                }
             }
+            oldManager.removeEmployee(currentUser, employ);
+            managers.remove(employ);
+            return;
         }
-        oldManager.removeEmployee(currentUser, employ);
-        managers.remove(employ);
+        throw new IllegalArgumentException("The current user can't remove an employee");
     }
 
     @Override
